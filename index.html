@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilirubin Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            padding: 20px; 
+            background-color: #070027; 
+            color: #333;
+        }
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 25px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+        }
+        
+        .nav-tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 25px;
+        }
+        .nav-item {
+            padding: 15px 30px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .nav-item:hover { background-color: #f8f9fa; color: #007bff; }
+        .nav-item.active {
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+        }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.3s; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        
+        .input-group { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px; }
+        .input-block { flex: 1; min-width: 220px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef; }
+        .input-block h3 { margin-top: 0; font-size: 1.1rem; color: #0056b3; border-bottom: 1px solid #ddd; padding-bottom: 8px; margin-bottom: 15px; }
+        
+        label { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: bold; color: #444; }
+        input, select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+        
+        .action-block { text-align: center; margin-top: 20px; }
+        button.calc-btn { 
+            background-color: #af8f02; 
+            color: white; 
+            border: none; 
+            padding: 14px 40px; 
+            font-size: 1.1rem; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: background 0.2s; 
+        }
+        button.calc-btn:hover { background-color: #8a7102; }
+        
+        .result-box { margin-top: 25px; padding: 20px; background-color: #e8f4ff; border-left: 6px solid #007bff; border-radius: 4px; display: none; }
+        .result-box.warning { background-color: #fff3cd; border-left-color: #ffc107; color: #856404; }
+        .result-box.danger { background-color: #f8d7da; border-left-color: #dc3545; color: #721c24; }
+        .result-big { font-size: 1.4rem; font-weight: bold; margin: 10px 0; }
+
+        .back-btn { display: inline-block; margin-bottom: 10px; color: #e8f4ff; text-decoration: none; font-size: 0.9rem; background-color: #4CAF50; padding: 8px 12px; border-radius: 5px; }
+        
+        #biliChart {
+            margin-top: 20px;
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body>
+
+
+<div class="container">
+    
+    <div class="nav-tabs">
+        <div class="nav-item active" onclick="switchTab('nomogram')">Bilirubinkurve (Graf)</div>
+        <div class="nav-item" onclick="switchTab('rebound')"> Protrahert bilirubin (Tekst)</div>
+    </div>
+
+    <div id="view-nomogram" class="view-section active">
+        <h2>Nomogram Kalkulator (0-14 Dager)</h2>
+        <div class="input-group">
+            <div class="input-block">
+                <h3>Prøve 1</h3>
+                <label>Alder (timer)</label>
+                <input type="number" id="n_t1" placeholder="f.eks 24">
+                <label>Bilirubin (µmol/L)</label>
+                <input type="number" id="n_v1" placeholder="f.eks 100">
+            </div>
+            <div class="input-block">
+                <h3>Prøve 2</h3>
+                <label>Alder (timer)</label>
+                <input type="number" id="n_t2" placeholder="f.eks 36">
+                <label>Bilirubin (µmol/L)</label>
+                <input type="number" id="n_v2" placeholder="f.eks 150">
+            </div>
+            <div class="input-block" style="background: #fff; border:none;">
+                <label>Velg Kurve (Grenseverdi)</label>
+                <select id="riskLine">
+                    <option value="red">Rød: >2500g</option>
+                    <option value="pink">Rosa: >2500g (GA 34-37)</option>
+                    <option value="blue">Blå: 1500-2500g</option>
+                    <option value="cyan">Cyan: 1000-1500g</option>
+                    <option value="green">Grønn: &lt;1000g</option>
+                </select>
+                <div class="action-block">
+                    <button class="calc-btn" onclick="calcNomogram()">Beregn & Vis Graf</button>
+                </div>
+            </div>
+        </div>
+        <div id="res-nomogram" class="result-box"></div>
+        <canvas id="biliChart"></canvas>
+    </div>
+
+    <div id="view-rebound" class="view-section">
+        <h2>For bruk etter de første 10 dagene</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Her kan du beregne når bilirubinnivået forventes å krysse en bestemt grenseverdi basert på tidligere målinger.
+            <br>
+            Bruk formatet dag/måned/år og 24-timers klokke.
+        </p>
+
+        <div class="input-group">
+            <div class="input-block">
+                <h3>1. Prøve 1 </h3>
+                <label>Dato og klokkeslett (24t)</label>
+                <input type="datetime-local" id="r_d1">
+                <label>Bilirubin (µmol/L)</label>
+                <input type="number" id="r_v1" placeholder="f.eks. 100">
+            </div>
+            <div class="input-block">
+                <h3>2. Før lagt i lys </h3>
+                <label>Dato og klokkeslett (24t)</label>
+                <input type="datetime-local" id="r_d2">
+                <label>Bilirubin (µmol/L)</label>
+                <input type="number" id="r_v2" placeholder="f.eks. 200">
+            </div>
+            <div class="input-block">
+                <h3>3. Prøve etter lys </h3>
+                <label>Dato og klokkeslett (24t)</label>
+                <input type="datetime-local" id="r_d3">
+                <label>Bilirubin (µmol/L)</label>
+                <input type="number" id="r_v3" placeholder="f.eks. 150">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="input-block" style="max-width: 400px; margin: 0 auto; border-color: #af8f02;">
+                <h3 style="color: #af8f02;">Lysgrense</h3>
+                <label>Lysgrense (µmol/L)</label>
+                <input type="number" id="r_limit" value="350" style="font-size: 1.2rem; font-weight: bold;">
+            </div>
+        </div>
+
+        <div class="action-block">
+            <button class="calc-btn" onclick="calcRebound()">Beregn Tidspunkt</button>
+            <button class="calc-btn" onclick="clearRebound()" style="background-color: #666; margin-left: 10px;">Nullstill</button>
+        </div>
+
+        <div id="res-rebound" class="result-box"></div>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabName) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('view-' + tabName).classList.add('active');
+        const tabIndex = tabName === 'nomogram' ? 0 : 1;
+        document.querySelectorAll('.nav-item')[tabIndex].classList.add('active');
+    }
+
+    const linesData = {
+        exchange: [ {x:0, y:200}, {x:3, y:400}, {x:14, y:400} ],
+        red:      [ {x:0, y:133}, {x:0.5, y:133}, {x:0.51, y:154}, {x:0.999, y:154}, {x:1, y:175}, {x:3, y:350}, {x:14, y:350} ],
+        pink:     [ {x:0, y:108}, {x:0.5, y:108}, {x:0.51, y:129}, {x:0.999, y:129}, {x:1, y:150}, {x:3, y:300}, {x:14, y:300} ],
+        blue:     [ {x:0, y:100}, {x:0.5, y:100}, {x:0.51, y:123}, {x:0.999, y:123}, {x:1, y:150}, {x:4, y:250}, {x:14, y:250} ],
+        cyan:     [ {x:0, y:100}, {x:0.5, y:100}, {x:0.51, y:100}, {x:0.999, y:100}, {x:1, y:125}, {x:4, y:200}, {x:14, y:200} ],
+        green:    [ {x:0, y:100}, {x:0.5, y:100}, {x:0.51, y:100},{x:0.999, y:100}, {x:1, y:100}, {x:4, y:150}, {x:14, y:150} ]
+    };
+
+    const ctx = document.getElementById('biliChart').getContext('2d');
+    let myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [
+                { label: 'Utskiftning', data: linesData.exchange, borderColor: 'black', borderDash: [5, 5], borderWidth: 1, pointRadius: 0 },
+                { label: '>2500g', data: linesData.red, borderColor: 'red', borderWidth: 2, pointRadius: 0 },
+                { label: '>2500g (34-37)', data: linesData.pink, borderColor: 'magenta', borderWidth: 2, pointRadius: 0 },
+                { label: '1500-2500g', data: linesData.blue, borderColor: 'blue', borderWidth: 2, pointRadius: 0 },
+                { label: '1000-1500g', data: linesData.cyan, borderColor: 'cyan', borderWidth: 2, pointRadius: 0 },
+                { label: '<1000g', data: linesData.green, borderColor: '#39FF14', borderWidth: 2, pointRadius: 0 },
+                { label: 'Målinger', data: [], borderColor: 'black', backgroundColor: 'black', borderWidth: 3, pointRadius: 6, showLine: true },
+                { label: 'Trend', data: [], borderColor: 'black', borderDash: [3, 3], borderWidth: 2, pointRadius: 0 }
+            ]
+        },
+        options: { 
+            responsive: true, 
+            scales: { 
+                x: { 
+                    type: 'linear', min: 0, max: 14,
+                    ticks: {
+                        stepSize: 1,
+                        autoSkip: false,
+                        // Multi-line labels: Day above, Hour below
+                        callback: function(value) {
+                            return [value, (value * 24) + 't'];
+                        },
+                        font: function(context) {
+                            const isHour = context.tick && context.tick.label && context.tick.label.length > 1;
+                            return {
+                                size: isHour ? 10 : 12,
+                                weight: isHour ? 'normal' : 'bold'
+                            };
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Alder (Dager / Timer)',
+                        font: { weight: 'bold' }
+                    }
+                }, 
+                y: { 
+                    min: 0, 
+                    max: 450,
+                    title: {
+                        display: true,
+                        text: 'Bilirubin (µmol/L)',
+                        font: { weight: 'bold' }
+                    }
+                } 
+            } 
+        }
+    });
+
+    function calcNomogram() {
+        const t1_h = parseFloat(document.getElementById('n_t1').value);
+        const v1 = parseFloat(document.getElementById('n_v1').value);
+        const t2_h = parseFloat(document.getElementById('n_t2').value);
+        const v2 = parseFloat(document.getElementById('n_v2').value);
+        
+        const selectEl = document.getElementById('riskLine');
+        const riskKey = selectEl.value;
+        const riskLabel = selectEl.options[selectEl.selectedIndex].text.split(':')[0];
+        
+        const curve = linesData[riskKey];
+        const resBox = document.getElementById('res-nomogram');
+        resBox.style.display = 'block';
+        resBox.className = 'result-box';
+
+        if(isNaN(t1_h) || isNaN(v1) || isNaN(t2_h) || isNaN(v2)) {
+            resBox.innerHTML = "Vennligst fyll ut alle feltene.";
+            return;
+        }
+
+        const t1 = t1_h / 24;
+        const t2 = t2_h / 24;
+        const slope = (v2 - v1) / (t2 - t1);
+
+        // Update Chart Data
+        myChart.data.datasets[6].data = [{x:t1, y:v1}, {x:t2, y:v2}];
+        myChart.data.datasets[7].data = [{x:t2, y:v2}, {x:14, y:v2 + (slope * (14 - t2))}];
+        myChart.update();
+
+        // 1. Calculate the actual limit at the EXACT time of measurement 2
+        let currentLimitAtT2 = null;
+        for (let i = 0; i < curve.length - 1; i++) {
+            let p1 = curve[i];
+            let p2 = curve[i+1];
+            // Check if t2 falls within this time segment
+            if (t2 >= p1.x && t2 <= p2.x) {
+                // Interpolate Y value on the line
+                let m = (p2.y - p1.y) / (p2.x - p1.x);
+                // Handle flat lines (plateaus) safely
+                if (p2.x === p1.x) { 
+                    currentLimitAtT2 = p2.y; 
+                } else {
+                    currentLimitAtT2 = p1.y + m * (t2 - p1.x);
+                }
+                break;
+            }
+        }
+        // Fallback: If time is beyond the last point, use the last point's Y
+        if (currentLimitAtT2 === null && t2 > curve[curve.length-1].x) {
+            currentLimitAtT2 = curve[curve.length-1].y;
+        }
+
+        // 2. Future Intersection Logic
+        let crossHour = null;
+        for (let i = 0; i < curve.length - 1; i++) {
+            let p1 = curve[i];
+            let p2 = curve[i+1];
+            if (p2.x === p1.x) continue; 
+
+            let m2 = (p2.y - p1.y) / (p2.x - p1.x);
+            let b2 = p1.y - m2 * p1.x;
+            let b1 = v2 - slope * t2;
+            let ix = (b2 - b1) / (slope - m2);
+
+            if (ix >= p1.x && ix <= p2.x && ix >= t2) {
+                crossHour = ix * 24;
+                break; 
+            }
+        }
+
+        let rate = (slope / 24).toFixed(2);
+        let resultText = `Stigningstakt: <strong>${rate} µmol/L/time</strong>.<br>`;
+
+        // 3. PRIORITY CHECK: Are we ALREADY above the limit right now?
+        if (currentLimitAtT2 !== null && v2 >= currentLimitAtT2) {
+             resBox.className += " danger";
+             resultText += `🚨 Verdien er allerede over grenseverdien! <br>(Din verdi: ${v2}, Grense ved ${t2_h}t: ${Math.round(currentLimitAtT2)})`;
+        } else if (crossHour) {
+            const days = Math.floor(crossHour / 24);
+            const hours = Math.round(crossHour % 24);
+            const totalHours = Math.round(crossHour);
+            resBox.className += " warning";
+            resultText += `⚠️ Trenden krysser <strong>${riskLabel}</strong> linjen ved ca. <strong>${totalHours} timer</strong> (Dag ${days}).`;
+        } else {
+            resultText += `✅ Trenden forventes ikke å krysse grenseverdien innen 14 dager.`;
+        }
+
+        resBox.innerHTML = resultText;
+    }
+
+    function calcRebound() {
+        const d1 = new Date(document.getElementById('r_d1').value);
+        const v1 = parseFloat(document.getElementById('r_v1').value);
+        const d2 = new Date(document.getElementById('r_d2').value);
+        const v2 = parseFloat(document.getElementById('r_v2').value);
+        const d3 = new Date(document.getElementById('r_d3').value);
+        const v3 = parseFloat(document.getElementById('r_v3').value);
+        const limit = parseFloat(document.getElementById('r_limit').value);
+        const resBox = document.getElementById('res-rebound');
+
+        resBox.style.display = 'block';
+        resBox.className = 'result-box';
+
+        if (isNaN(d1) || isNaN(v1) || isNaN(d2) || isNaN(v2) || isNaN(d3) || isNaN(v3) || isNaN(limit)) {
+            resBox.className += " warning";
+            resBox.innerHTML = "Sjekk at alle datoer og verdier er fylt ut.";
+            return;
+        }
+
+        const diffHours1_2 = Math.abs(d2 - d1) / 3600000;
+        const stigningPerTime = (v2 - v1) / diffHours1_2;
+        const restTilGrense = limit - v3;
+
+        let html = `<strong>Beregnet trend:</strong><br>`;
+        html += `Stigningstakt: ${stigningPerTime.toFixed(2)} µmol/L per time.<br><br>`;
+
+        if (stigningPerTime <= 0) {
+            html += `Trenden er flat eller synkende.`;
+        } else if (restTilGrense <= 0) {
+            resBox.className += " danger";
+            html += `<div class="result-big">GRENSE NÅDD</div>`;
+        } else {
+            const timerTilGrense = restTilGrense / stigningPerTime;
+            const krysningDato = new Date(d3.getTime() + (timerTilGrense * 3600000));
+            
+            const datoStreng = krysningDato.toLocaleString('no-NO', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hourCycle: 'h23' 
+            });
+
+            const dager = Math.floor(timerTilGrense / 24);
+            const timer = Math.round(timerTilGrense % 24);
+
+            resBox.className += " warning";
+            html += `Beregnet tidspunkt for å nå lysgrenseverdi på ${limit} µmol/L:`;
+            html += `<div class="result-big">${datoStreng}</div>`;
+            html += `(Tilsvarer ca. ${dager} døgn og ${timer} timer etter siste prøve)`;
+        }
+        resBox.innerHTML = html;
+    }
+
+    function clearRebound() {
+        document.getElementById('r_d1').value = '';
+        document.getElementById('r_v1').value = '';
+        document.getElementById('r_d2').value = '';
+        document.getElementById('r_v2').value = '';
+        document.getElementById('r_d3').value = '';
+        document.getElementById('r_v3').value = '';
+        document.getElementById('r_limit').value = '350';
+        document.getElementById('res-rebound').style.display = 'none';
+    }
+</script>
+</body>
+</html>
