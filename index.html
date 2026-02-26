@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilirubin Pro Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="bilirubin.css">
+</head>
+<body>
+
+    
+
+<div class="container">
+    
+    <div class="nav-tabs">
+        <div class="nav-item active" onclick="switchTab('nomogram')">Bilirubinkurve (Graf)</div>
+        <div class="nav-item" onclick="switchTab('rebound')">Langvarig gulsot (Tekst)</div>
+    </div>
+
+    <div id="view-nomogram" class="view-section active">
+        <h2>Nomogram Kalkulator (0-14 Dager)</h2>
+        <div id="info-text">
+            <p>Skjema kan også brukes etter 10 dager, men da er det anbefalt å bruke aktuell vekt/postmenstruell alder på barnet</p>
+        </div>
+        
+        <div class="input-group">
+            <div class="input-block">
+                <h3>Prøve 1</h3>
+                <label>Alder (timer)</label>
+                <input type="number" id="n_t1" placeholder="f.eks 24">
+                <label>Bilirubin (µmol/L)</label>
+                <input type="number" id="n_v1" placeholder="f.eks 100">
+            </div> 
+
+            <div class="input-block">
+                <h3>Prøve 2</h3>
+                <label>Alder (timer)</label>
+                <input type="number" id="n_t2" placeholder="f.eks 36">
+                <label>Bilirubin (µmol/L)</label>
+                <input type="number" id="n_v2" placeholder="f.eks 150">
+            </div>
+
+            <div class="input-block">
+                <h3>Innstillinger</h3>
+                <label>Velg Kurve (Grenseverdi)</label>
+                <select id="riskLine">
+                    <option value="red">Rød: >2500g</option>
+                    <option value="pink">Rosa: >2500g (GA 34-37)</option>
+                    <option value="blue">Blå: 1500-2500g</option>
+                    <option value="cyan">Cyan: 1000-1500g</option>
+                    <option value="green">Grønn: &lt;1000g</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="centered-actions">
+            <button class="calc-btn secondary" onclick="checkSingleValue()">Sjekk kun Prøve 1</button>
+            <button class="calc-btn" onclick="calcNomogram()">Beregn & Vis Graf (Begge prøver)</button>
+        </div>
+
+        <div id="res-nomogram" class="result-box"></div>
+
+        <canvas id="biliChart"></canvas>
+    </div>
+
+    <div id="view-rebound" class="view-section">
+        <h2>For bruk etter de første 10 dagene</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Her kan du beregne når bilirubinnivået forventes å krysse en bestemt grenseverdi basert på tidligere målinger.
+            <br>
+            Bruk formatet dag/måned/år og 24-timers klokke.
+        </p>
+
+        <div class="input-group">
+            <div class="input-block">
+                <h3>1. Prøve 1 </h3>
+                <label>Dato og klokkeslett (24t)</label>
+                <input type="datetime-local" id="r_d1">
+                <label>Bilirubin (µmol/L)</label>
+                <input type="number" id="r_v1" placeholder="f.eks. 100">
+            </div>
+            <div class="input-block">
+                <h3>2. Før lagt i lys </h3>
+                <label>Dato og klokkeslett (24t)</label>
+                <input type="datetime-local" id="r_d2">
+                <label>Bilirubin (µmol/L)</label>
+                <input type="number" id="r_v2" placeholder="f.eks. 200">
+            </div>
+            <div class="input-block">
+                <h3>3. Prøve etter lys </h3>
+                <label>Dato og klokkeslett (24t)</label>
+                <input type="datetime-local" id="r_d3">
+                <label>Bilirubin (µmol/L)</label>
+                <input type="number" id="r_v3" placeholder="f.eks. 150">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="input-block" style="max-width: 400px; margin: 0 auto; border-color: #af8f02;">
+                <h3 style="color: #af8f02;">Lysgrense</h3>
+                <label>Lysgrense (µmol/L)</label>
+                <input type="number" id="r_limit" value="350" style="font-size: 1.2rem; font-weight: bold;">
+            </div>
+        </div>
+
+        <div class="action-block">
+            <button class="calc-btn" onclick="calcRebound()">Beregn Tidspunkt</button>
+            <button class="calc-btn" onclick="clearRebound()" style="background-color: #666; margin-left: 10px;">Nullstill</button>
+        </div>
+
+        <div id="res-rebound" class="result-box"></div>
+    </div>
+</div>
+
+<h3 style="text-align:center; color:#aaa; margin-top:40px;">2026 Academic Inquiries</h3>
+    <h5 style="text-align:center; color:#e4dddd; font-weight: lighter; margin-top:10px;">Denne kalkulatoren er ment som et supplement, skaperen av denne kalkulatoren tar ikke ansvar for eventuelle feil eller skader som følge av bruk.</h5>
+
+<script src="bilirubin.js"></script>
+</body>
+</html>

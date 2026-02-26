@@ -1,0 +1,204 @@
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    padding: 20px; 
+    background-color: #070027; 
+    color: #333;
+}
+
+.container { 
+    max-width: 1000px; 
+    margin: 0 auto; 
+    background: white; 
+    padding: 20px 25px; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+}
+
+.nav-tabs {
+    display: flex;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 20px;
+}
+
+.nav-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #666;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+}
+
+.nav-item:hover { background-color: #f8f9fa; color: #007bff; }
+.nav-item.active { color: #007bff; border-bottom: 3px solid #007bff; }
+
+.view-section { display: none; }
+.view-section.active { display: block; animation: fadeIn 0.3s; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 { text-align: center; color: #333; margin-bottom: 15px; font-size: 1.4rem; }
+
+#info-text {
+    background-color: #82c06f33;
+    text-align: center; 
+    margin-bottom: 20px; 
+    border-radius: 5px;
+    padding: 12px;
+    color: #0f0b0b; 
+    font-size: 0.9rem; 
+}
+
+.input-group { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 15px; 
+    margin-bottom: 15px; 
+    justify-content: center;
+}
+
+.input-block { 
+    flex: 1; 
+    min-width: 200px; 
+    padding: 15px; 
+    background: #f8f9fa; 
+    border-radius: 8px; 
+    border: 1px solid #e9ecef; 
+}
+
+.input-block h3 { 
+    margin-top: 0; 
+    font-size: 1rem; 
+    color: #01000c; 
+    border-bottom: 1px solid #ddd; 
+    padding-bottom: 6px; 
+    margin-bottom: 12px; 
+}
+
+label { display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: bold; color: #444; }
+input, select { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 0.95rem; }
+
+/* Buttons */
+.centered-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.action-block { text-align: center; margin-top: 15px; }
+
+button.calc-btn { 
+    background-color: #af8f02; 
+    color: white; 
+    border: none; 
+    padding: 10px 25px; 
+    font-size: 1rem; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    font-weight: bold;
+    transition: background 0.2s; 
+}
+
+button.calc-btn:hover { background-color: #8a7102; }
+button.calc-btn.secondary { background-color: #6c757d; }
+button.calc-btn.secondary:hover { background-color: #5a6268; }
+
+.back-btn { 
+    display: inline-block; 
+    margin-bottom: 10px; 
+    color: #e8f4ff; 
+    text-decoration: none; 
+    font-size: 0.85rem; 
+    background-color: #4CAF50; 
+    padding: 6px 12px; 
+    border-radius: 5px; 
+}
+
+#biliChart { margin-top: 15px; max-height: 450px; }
+
+/* Compact & Modernized Result Box */
+.result-box {
+    margin: 15px auto;
+    max-width: 800px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px; /* Reduced padding */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    display: none;
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.result-box.warning {
+    background: linear-gradient(to right, #fffdf5, #ffffff);
+    border-left: 6px solid #ffc107;
+}
+
+.result-box.danger {
+    background: linear-gradient(to right, #fff5f5, #ffffff);
+    border-left: 6px solid #dc3545;
+}
+
+.result-big { font-size: 1.2rem; font-weight: bold; margin: 8px 0; }
+
+/* Status Header & Text */
+.status-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem; /* Smaller */
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.value-highlight {
+    font-size: 1.5rem; /* Smaller */
+    font-weight: 900;
+    display: block;
+    margin: 4px 0;
+}
+
+/* Comparison Grid - Compact */
+.comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px; /* Tighter gap */
+    margin-top: 10px;
+}
+
+.comparison-item {
+    padding: 8px; /* Tighter padding */
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #eee;
+    text-align: center;
+}
+
+.comparison-label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.comparison-value {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #333;
+}
+
+.dot {
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 4px;
+}
